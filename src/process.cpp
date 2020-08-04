@@ -13,11 +13,12 @@ using std::vector;
 
 Process::Process(int pid) : pid_(pid) {
   // initialize all values
-  calculateCpuUsage();
-  setCommand();
-  setRam();
-  setUptime();
-  setUser();
+  command_ = LinuxParser::Command(Pid()); 
+  uptime_ = LinuxParser::UpTime(Pid());
+  user_ = LinuxParser::User(Pid());
+
+  cpu_usage_ = calculateCpuUsage();
+  ram_usage_ = calculateRamUsage();
 }
 
 // TODO: Return this process's ID
@@ -38,49 +39,27 @@ string Process::User() { return user_; }
 // TODO: Return the age of this process (in seconds)
 long int Process::UpTime() { return uptime_; }
 
-
-
-void Process::setUser() { 
-    user_ = LinuxParser::User(Pid()); 
-}
-
-void Process::setCommand() { 
-    command_ = LinuxParser::Command(Pid()); 
-}
-
 // calculate the CPU utilization of this process and save in cpuUsage_
-void Process::calculateCpuUsage() {
-  // read values from filesystem
-  long uptime = LinuxParser::UpTime();
-  vector<float> val = LinuxParser::CpuUtilization(Pid());
-  // only if the values could be read sucessfully
-  if (val.size() == 5) {
-    // add utime, stime, cutime, cstime (they are in seconds)
-    float totaltime = val[0] + val[1] + val[2] + val[3];
-    float seconds = uptime - val[4];
-    // calculate the processes CPU usage
-    cpu_usage_ = totaltime / seconds;
-  } else
-    cpu_usage_ = 0;
+float Process::calculateCpuUsage() {
+  map<string, float> val = LinuxParser::CpuUtilization(Pid());
+  if (val.size() == 5)
+    return (val["utime"] + val["ktime"] + val["cutime"] + val["cstime"]) / (uptime_ - val["stime"]);
+  else
+    return 0;
 }
 
-void Process::setRam() {
+string Process::calculateRamUsage() {
   string val_kb = LinuxParser::Ram(Pid());
 
   try {
     long val_mb = std::stol(val_kb) / 1000;
-    ram_usage_ = std::to_string(val_mb);
+    return std::to_string(val_mb);
   } catch (const std::invalid_argument& arg) {
-    ram_usage_ = "0";
+    return "0";
   }
 }
 
-void Process::setUptime() {
-  uptime_ = LinuxParser::UpTime(Pid());
-}
-
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
+// DONE: Overload the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& a) const { 
-    return this->pid_ < a.Pid(); 
+  return this->pid_ < a.Pid(); 
 }

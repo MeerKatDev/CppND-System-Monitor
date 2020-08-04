@@ -172,7 +172,7 @@ int LinuxParser::RunningProcesses() {
 // DONE: Read and return the command associated with a process
 string LinuxParser::Command(int pid) { 
   string value = "";
-  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kCmdlineFilename);
+  std::ifstream filestream(get_process_subdir(pid, kCmdlineFilename));
   if (filestream.is_open()) {
     std::getline(filestream, value);
     return value;
@@ -188,28 +188,30 @@ string LinuxParser::Command(int pid) {
 #define CPU_CSTIME 17
 #define START_TIME 22
 
-// Read and return the CPU usage of a process
-// return the values in seconds
-vector<float> LinuxParser::CpuUtilization(int pid) {
-  vector<float> cpuValues{};
+map<string, float> LinuxParser::CpuUtilization(int pid) {
+  map<string, float> cpuValues{};
   string line, value;
   float time = 0.f;
   int i;
-  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) +
-                           kStatFilename);
+  std::ifstream filestream(get_process_subdir(pid, kStatFilename));
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
       for (i = 1; i <= START_TIME; i++) {
         linestream >> value;
+        time = std::stof(value) / sysconf(_SC_CLK_TCK);
         switch(i) {
           case CPU_UTIME: 
+            cpuValues["utime"] = time;
           case CPU_KTIME: 
+            cpuValues["ktime"] = time;
           case CPU_CUTIME: 
+            cpuValues["cutime"] = time;
           case CPU_CSTIME: 
+            cpuValues["cstime"] = time;
           case START_TIME:
-            time = std::stof(value) / sysconf(_SC_CLK_TCK);
-            cpuValues.push_back(time);
+            cpuValues["stime"] = time;
+            return cpuValues;
         }
       }
     }
@@ -222,7 +224,7 @@ string LinuxParser::Ram(int pid) {
   string line;
   string key;
   string value = "";
-  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kStatusFilename);
+  std::ifstream filestream(get_process_subdir(pid, kStatusFilename));
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ':', ' ');
@@ -242,7 +244,7 @@ string LinuxParser::Uid(int pid) {
   string line;
   string key;
   string value = "";
-  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kStatusFilename);
+  std::ifstream filestream(get_process_subdir(pid, kStatusFilename));
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ':', ' ');
@@ -260,11 +262,7 @@ string LinuxParser::Uid(int pid) {
 // DONE: Read and return the user associated with a process
 string LinuxParser::User(int pid) {
   // read the user ID for this process
-  string uid = Uid(pid);
-  string line;
-  string key;
-  string value = "";
-  string other;
+  string line, key, other, uid = Uid(pid), value = "";
   // find user name for this user ID in /etc/passwd
   std::ifstream filestream(kPasswordPath);
   if (filestream.is_open()) {
@@ -281,13 +279,15 @@ string LinuxParser::User(int pid) {
   return value;
 }
 
+string LinuxParser::get_process_subdir(int pid, string subdir) {
+  return kProcDirectory + "/" + std::to_string(pid) + subdir;
+}
 
 // TODO: Read and return the uptime of a process
 long LinuxParser::UpTime(int pid) {
-  string line;
+  string line, value;
   long uptime = 0;
-  string value;
-  std::ifstream filestream(kProcDirectory + "/" + std::to_string(pid) + kStatFilename);
+  std::ifstream filestream(get_process_subdir(pid, kStatFilename));
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);

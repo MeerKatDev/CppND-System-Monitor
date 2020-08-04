@@ -13,25 +13,25 @@ using std::vector;
 
 namespace LinuxParser {
   // Paths
-  const std::string kProcDirectory{"/proc/"};
-  const std::string kCmdlineFilename{"/cmdline"};
-  const std::string kCpuinfoFilename{"/cpuinfo"};
-  const std::string kStatusFilename{"/status"};
-  const std::string kStatFilename{"/stat"};
-  const std::string kUptimeFilename{"/uptime"};
-  const std::string kMeminfoFilename{"/meminfo"};
-  const std::string kVersionFilename{"/version"};
-  const std::string kOSPath{"/etc/os-release"};
-  const std::string kPasswordPath{"/etc/passwd"};
+  const string kProcDirectory{"/proc/"};
+  const string kCmdlineFilename{"/cmdline"};
+  const string kCpuinfoFilename{"/cpuinfo"};
+  const string kStatusFilename{"/status"};
+  const string kStatFilename{"/stat"};
+  const string kUptimeFilename{"/uptime"};
+  const string kMeminfoFilename{"/meminfo"};
+  const string kVersionFilename{"/version"};
+  const string kOSPath{"/etc/os-release"};
+  const string kPasswordPath{"/etc/passwd"};
 
   // System
   float MemoryUtilization();
   long UpTime();
-  std::vector<int> Pids();
+  vector<int> Pids();
   int TotalProcesses();
   int RunningProcesses();
-  std::string OperatingSystem();
-  std::string Kernel();
+  string OperatingSystem();
+  string Kernel();
 
   // CPU
   enum CPUStates {
@@ -53,12 +53,14 @@ namespace LinuxParser {
   long IdleJiffies();
 
   // Processes
-  vector<float> CpuUtilization(int pid);
-  std::string Command(int pid);
-  std::string Ram(int pid);
-  std::string Uid(int pid);
-  std::string User(int pid);
+  map<string,float> CpuUtilization(int pid);
+  string Command(int pid);
+  string Ram(int pid);
+  string Uid(int pid);
+  string User(int pid);
   long int UpTime(int pid);
+  // private
+  string get_process_subdir(int pid, string subdir);
 };  // namespace LinuxParser
 
 #endif
