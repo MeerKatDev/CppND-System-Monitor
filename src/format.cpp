@@ -18,5 +18,4 @@ string Format::ElapsedTime(long seconds) {
     string mm = (minutes <= 9 ? "0" : "") + to_string(minutes);
     string ss = to_string(remaining);
     return hh + ":" + mm + ":" + ss; 
-
 }
