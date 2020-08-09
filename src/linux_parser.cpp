@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <iostream>
 
 #include "linux_parser.h"
 
@@ -75,13 +76,19 @@ float LinuxParser::MemoryUtilization() {
 
   if (stream.is_open()) { 
     std::getline(stream, line);
-    std::istringstream linestream(line);
-    linestream >> rowname >> memtotal;
+    std::istringstream linestream_tot(line);
+    linestream_tot >> rowname >> memtotal;
     std::getline(stream, line);
-    linestream >> rowname >> memfree;
-    memtotal_l = stol(memtotal);
-    memfree_l = stol(memfree);
-    return (memtotal_l - memfree_l)/((float) memtotal_l); 
+    std::istringstream linestream_free(line);
+    linestream_free >> rowname >> memfree;
+    try {
+      memtotal_l = stol(memtotal);
+      memfree_l = stol(memfree);
+      return (memtotal_l - memfree_l)/((float) memtotal_l); 
+    } catch(const std::invalid_argument& arg) {
+      std::cout << "error in LinuxParser::MemoryUtilization\n";
+      return 0.0;
+    }
   }
 
   return 0.0;
@@ -104,7 +111,9 @@ long LinuxParser::Jiffies() { return 0; }
 
 // TODO: Read and return the number of active jiffies for a PID
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
+// [[maybe_unused]]
+// MOCK fun - should be implemented correctly
+long LinuxParser::ActiveJiffies(int pid) { return pid; }
 
 // TODO: Read and return the number of active jiffies for the system
 long LinuxParser::ActiveJiffies() { return 0; }
@@ -117,19 +126,25 @@ map<string, long> LinuxParser::CpuUtilization() {
   string line;
   string user, nice, sys, idle, iowait, irq, softirq, steal, guest, guest_nice;
   map<string, long> res;
-  std::ifstream stream(kProcDirectory + kCpuinfoFilename); // open file content stream
+  std::ifstream stream(kProcDirectory + kStatFilename); // open file content stream
   if (stream.is_open()) {   // Is the stream open? Can I use it? 
     std::getline(stream, line);  // can do without a while because there's only one line
     std::istringstream linestream(line);
-    linestream >> user >> nice >> sys >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
-    res["idle"] = stol(idle);
-    res["iowait"] = stol(iowait);
-    res["user"] = stol(user) - stol(guest);
-    res["nice"] = stol(nice) - stol(guest_nice);
-    res["sys"] = stol(sys);
-    res["irq"] = stol(irq);
-    res["softirq"] = stol(softirq);
-    res["steal"] = stol(steal);
+    string cpu_name;
+    linestream >> cpu_name >> user >> nice >> sys >> idle >> iowait >> irq >> softirq >> steal >> guest >> guest_nice;
+    try {
+      res["idle"] = stol(idle);
+      res["iowait"] = stol(iowait);
+      res["user"] = stol(user) - stol(guest);
+      res["nice"] = stol(nice) - stol(guest_nice);
+      res["sys"] = stol(sys);
+      res["irq"] = stol(irq);
+      res["softirq"] = stol(softirq);
+      res["steal"] = stol(steal);
+    } catch(const std::invalid_argument& arg) {
+      std::cout << "error in LinuxParser::CpuUtilization" << std::endl;
+      return res;
+    }
     return res;
   }
   return res;
@@ -138,7 +153,7 @@ map<string, long> LinuxParser::CpuUtilization() {
 // DONE: Read and return the total number of processes
 int LinuxParser::TotalProcesses() { 
   string key, value, line;
-  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+  std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
@@ -155,7 +170,7 @@ int LinuxParser::TotalProcesses() {
 // DONE: Read and return the number of running processes
 int LinuxParser::RunningProcesses() { 
   string key, value, line;
-  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
+  std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
       std::istringstream linestream(line);
@@ -181,7 +196,6 @@ string LinuxParser::Command(int pid) {
 
 }
 
-
 #define CPU_UTIME 14
 #define CPU_KTIME 15
 #define CPU_CUTIME 16
@@ -191,7 +205,6 @@ string LinuxParser::Command(int pid) {
 map<string, float> LinuxParser::CpuUtilization(int pid) {
   map<string, float> cpuValues{};
   string line, value;
-  float time = 0.f;
   int i;
   std::ifstream filestream(get_process_subdir(pid, kStatFilename));
   if (filestream.is_open()) {
@@ -199,19 +212,17 @@ map<string, float> LinuxParser::CpuUtilization(int pid) {
       std::istringstream linestream(line);
       for (i = 1; i <= START_TIME; i++) {
         linestream >> value;
-        time = std::stof(value) / sysconf(_SC_CLK_TCK);
         switch(i) {
           case CPU_UTIME: 
-            cpuValues["utime"] = time;
+            cpuValues["utime"] = std::stof(value) / sysconf(_SC_CLK_TCK);
           case CPU_KTIME: 
-            cpuValues["ktime"] = time;
+            cpuValues["ktime"] = std::stof(value) / sysconf(_SC_CLK_TCK);
           case CPU_CUTIME: 
-            cpuValues["cutime"] = time;
+            cpuValues["cutime"] = std::stof(value) / sysconf(_SC_CLK_TCK);
           case CPU_CSTIME: 
-            cpuValues["cstime"] = time;
+            cpuValues["cstime"] = std::stof(value) / sysconf(_SC_CLK_TCK);
           case START_TIME:
-            cpuValues["stime"] = time;
-            return cpuValues;
+            cpuValues["stime"] = std::stof(value) / sysconf(_SC_CLK_TCK);
         }
       }
     }
@@ -297,9 +308,9 @@ long LinuxParser::UpTime(int pid) {
           // read the starttime value in clock ticks and convert to seconds
           // devide by clock ticks per second
           try {
-            uptime = std::stol(value) / sysconf(_SC_CLK_TCK);
-            return uptime;
+            return std::stol(value) / sysconf(_SC_CLK_TCK);
           } catch (const std::invalid_argument& arg) {
+            std::cout << "error in LinuxParser::UpTime\n";
             return 0;
           }
         }

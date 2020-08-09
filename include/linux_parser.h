@@ -13,7 +13,7 @@ using std::vector;
 
 namespace LinuxParser {
   // Paths
-  const string kProcDirectory{"/proc/"};
+  const string kProcDirectory{"/proc"};
   const string kCmdlineFilename{"/cmdline"};
   const string kCpuinfoFilename{"/cpuinfo"};
   const string kStatusFilename{"/status"};
