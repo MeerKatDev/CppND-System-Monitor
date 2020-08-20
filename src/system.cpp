@@ -4,9 +4,9 @@
 #include <string>
 #include <vector>
 
+#include "linux_parser.h"
 #include "process.h"
 #include "processor.h"
-#include "linux_parser.h"
 #include "system.h"
 
 using std::set;
@@ -18,15 +18,14 @@ using std::vector;
 Processor& System::Cpu() { return cpu_; }
 
 // TODO: Return a container composed of the system's processes
-vector<Process>& System::Processes() { 
+vector<Process>& System::Processes() {
   vector<int> pids = LinuxParser::Pids();
-  for (auto pid : pids){
+  for (auto pid : pids) {
     Process process(pid);
     processes_.push_back(process);
   }
-  return processes_; 
+  return processes_;
 }
-
 
 // DONE: Return the system's kernel identifier (string)
 std::string System::Kernel() { return LinuxParser::Kernel(); }
@@ -41,7 +40,7 @@ std::string System::OperatingSystem() { return LinuxParser::OperatingSystem(); }
 int System::RunningProcesses() { return LinuxParser::RunningProcesses(); }
 
 // DONE: Return the total number of processes on the system
-int System::TotalProcesses() { return LinuxParser::TotalProcesses();  }
+int System::TotalProcesses() { return LinuxParser::TotalProcesses(); }
 
 // DONE: Return the number of seconds since the system started running
 long int System::UpTime() { return LinuxParser::UpTime(); }

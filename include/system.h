@@ -24,7 +24,6 @@ class System {
   std::vector<Process> processes_ = {};
   std::string knl_id_ = "";
   std::string os_name_ = "";
-
 };
 
 #endif

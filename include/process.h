@@ -11,13 +11,13 @@ It contains relevant attributes as shown below
 class Process {
  public:
   Process(int pid);
-  
-  int Pid() const;                               
-  string User();                    
-  string Command();                 
-  float CpuUtilization();                
-  string Ram();                     
-  long int UpTime();                     
+
+  int Pid() const;
+  string User();
+  string Command();
+  float CpuUtilization();
+  string Ram();
+  long int UpTime();
   bool operator<(Process const& a) const;
 
  private:
@@ -30,7 +30,6 @@ class Process {
 
   float calculateCpuUsage();
   string calculateRamUsage();
-  
 };
 
 #endif

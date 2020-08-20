@@ -12,55 +12,55 @@ using std::map;
 using std::vector;
 
 namespace LinuxParser {
-  // Paths
-  const string kProcDirectory{"/proc"};
-  const string kCmdlineFilename{"/cmdline"};
-  const string kCpuinfoFilename{"/cpuinfo"};
-  const string kStatusFilename{"/status"};
-  const string kStatFilename{"/stat"};
-  const string kUptimeFilename{"/uptime"};
-  const string kMeminfoFilename{"/meminfo"};
-  const string kVersionFilename{"/version"};
-  const string kOSPath{"/etc/os-release"};
-  const string kPasswordPath{"/etc/passwd"};
+// Paths
+const string kProcDirectory{"/proc"};
+const string kCmdlineFilename{"/cmdline"};
+const string kCpuinfoFilename{"/cpuinfo"};
+const string kStatusFilename{"/status"};
+const string kStatFilename{"/stat"};
+const string kUptimeFilename{"/uptime"};
+const string kMeminfoFilename{"/meminfo"};
+const string kVersionFilename{"/version"};
+const string kOSPath{"/etc/os-release"};
+const string kPasswordPath{"/etc/passwd"};
 
-  // System
-  float MemoryUtilization();
-  long UpTime();
-  vector<int> Pids();
-  int TotalProcesses();
-  int RunningProcesses();
-  string OperatingSystem();
-  string Kernel();
+// System
+float MemoryUtilization();
+long UpTime();
+vector<int> Pids();
+int TotalProcesses();
+int RunningProcesses();
+string OperatingSystem();
+string Kernel();
 
-  // CPU
-  enum CPUStates {
-    kUser_ = 0,
-    kNice_,
-    kSystem_,
-    kIdle_,
-    kIOwait_,
-    kIRQ_,
-    kSoftIRQ_,
-    kSteal_,
-    kGuest_,
-    kGuestNice_
-  };
-  map<string, long> CpuUtilization();
-  long Jiffies();
-  long ActiveJiffies();
-  long ActiveJiffies(int pid);
-  long IdleJiffies();
+// CPU
+enum CPUStates {
+  kUser_ = 0,
+  kNice_,
+  kSystem_,
+  kIdle_,
+  kIOwait_,
+  kIRQ_,
+  kSoftIRQ_,
+  kSteal_,
+  kGuest_,
+  kGuestNice_
+};
+map<string, long> CpuUtilization();
+long Jiffies();
+long ActiveJiffies();
+long ActiveJiffies(int pid);
+long IdleJiffies();
 
-  // Processes
-  map<string,float> CpuUtilization(int pid);
-  string Command(int pid);
-  string Ram(int pid);
-  string Uid(int pid);
-  string User(int pid);
-  long int UpTime(int pid);
-  // private
-  string get_process_subdir(int pid, string subdir);
+// Processes
+map<string, float> CpuUtilization(int pid);
+string Command(int pid);
+string Ram(int pid);
+string Uid(int pid);
+string User(int pid);
+long int UpTime(int pid);
+// private
+string get_process_subdir(int pid, string subdir);
 };  // namespace LinuxParser
 
 #endif

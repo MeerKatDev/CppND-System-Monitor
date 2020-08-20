@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <cctype>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -13,7 +14,7 @@ using std::vector;
 
 Process::Process(int pid) : pid_(pid) {
   // initialize all values
-  command_ = LinuxParser::Command(Pid()); 
+  command_ = LinuxParser::Command(Pid());
   uptime_ = LinuxParser::UpTime(Pid());
   user_ = LinuxParser::User(Pid());
 
@@ -43,7 +44,8 @@ long int Process::UpTime() { return uptime_; }
 float Process::calculateCpuUsage() {
   map<string, float> val = LinuxParser::CpuUtilization(Pid());
   if (val.size() == 5)
-    return (val["utime"] + val["ktime"] + val["cutime"] + val["cstime"]) / (uptime_ - val["stime"]);
+    return (val["utime"] + val["ktime"] + val["cutime"] + val["cstime"]) /
+           (uptime_ - val["stime"]);
   else
     return 0;
 }
@@ -55,11 +57,10 @@ string Process::calculateRamUsage() {
     long val_mb = std::stol(val_kb) / 1000;
     return std::to_string(val_mb);
   } catch (const std::invalid_argument& arg) {
+    std::cout << "error in Process::calculateRamUsage" << std::endl;
     return "0";
   }
 }
 
 // DONE: Overload the "less than" comparison operator for Process objects
-bool Process::operator<(Process const& a) const { 
-  return this->pid_ < a.Pid(); 
-}
+bool Process::operator<(Process const& a) const { return this->pid_ < a.Pid(); }

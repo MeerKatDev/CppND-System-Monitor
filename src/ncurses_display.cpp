@@ -45,7 +45,8 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   string total_proc_num = to_string(system.TotalProcesses());
   mvwprintw(window, ++row, 2, ("Total Processes: " + total_proc_num).c_str());
   string running_proc_num = to_string(system.RunningProcesses());
-  mvwprintw(window, ++row, 2, ("Running Processes: " + running_proc_num).c_str());
+  mvwprintw(window, ++row, 2,
+            ("Running Processes: " + running_proc_num).c_str());
   string uptime = Format::ElapsedTime(system.UpTime());
   mvwprintw(window, ++row, 2, ("Up Time: " + uptime).c_str());
   wrefresh(window);
@@ -92,8 +93,7 @@ void NCursesDisplay::Display(System& system, int n) {
   int y_max{getmaxy(stdscr)};
   WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
 
-  WINDOW* process_window =
-      newwin(3 + n, x_max - 1, y_max + 1, 0);
+  WINDOW* process_window = newwin(3 + n, x_max - 1, y_max + 1, 0);
 
   while (1) {
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
