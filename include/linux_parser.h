@@ -61,6 +61,6 @@ string User(int pid);
 long int UpTime(int pid);
 // private
 string get_process_subdir(int pid, string subdir);
-};  // namespace LinuxParser
+}  // namespace LinuxParser
 
 #endif
