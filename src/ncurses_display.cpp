@@ -13,8 +13,8 @@ using std::to_string;
 
 // 50 bars uniformly displayed from 0 - 100 %
 // 2% is one bar(|)
-string NCursesDisplay::ProgressBar(float percent) {
-  string result{"0%"};
+std::string NCursesDisplay::ProgressBar(float percent) {
+  std::string result{"0%"};
   int size{50};
   float bars{percent * size};
 
@@ -42,13 +42,13 @@ void NCursesDisplay::DisplaySystem(System& system, WINDOW* window) {
   mvwprintw(window, row, 10, "");
   wprintw(window, ProgressBar(system.MemoryUtilization()).c_str());
   wattroff(window, COLOR_PAIR(1));
-  string total_proc_num = to_string(system.TotalProcesses());
-  mvwprintw(window, ++row, 2, ("Total Processes: " + total_proc_num).c_str());
-  string running_proc_num = to_string(system.RunningProcesses());
   mvwprintw(window, ++row, 2,
-            ("Running Processes: " + running_proc_num).c_str());
-  string uptime = Format::ElapsedTime(system.UpTime());
-  mvwprintw(window, ++row, 2, ("Up Time: " + uptime).c_str());
+            ("Total Processes: " + to_string(system.TotalProcesses())).c_str());
+  mvwprintw(
+      window, ++row, 2,
+      ("Running Processes: " + to_string(system.RunningProcesses())).c_str());
+  mvwprintw(window, ++row, 2,
+            ("Up Time: " + Format::ElapsedTime(system.UpTime())).c_str());
   wrefresh(window);
 }
 
@@ -77,9 +77,8 @@ void NCursesDisplay::DisplayProcesses(std::vector<Process>& processes,
     mvwprintw(window, row, ram_column, processes[i].Ram().c_str());
     mvwprintw(window, row, time_column,
               Format::ElapsedTime(processes[i].UpTime()).c_str());
-    int x_max{getmaxx(stdscr)};
     mvwprintw(window, row, command_column,
-              processes[i].Command().substr(0, x_max - 46).c_str());
+              processes[i].Command().substr(0, window->_maxx - 46).c_str());
   }
 }
 
@@ -90,10 +89,9 @@ void NCursesDisplay::Display(System& system, int n) {
   start_color();  // enable color
 
   int x_max{getmaxx(stdscr)};
-  int y_max{getmaxy(stdscr)};
   WINDOW* system_window = newwin(9, x_max - 1, 0, 0);
-
-  WINDOW* process_window = newwin(3 + n, x_max - 1, y_max + 1, 0);
+  WINDOW* process_window =
+      newwin(3 + n, x_max - 1, system_window->_maxy + 1, 0);
 
   while (1) {
     init_pair(1, COLOR_BLUE, COLOR_BLACK);
