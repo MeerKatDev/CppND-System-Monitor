@@ -43,9 +43,10 @@ long int Process::UpTime() { return uptime_; }
 // calculate the CPU utilization of this process and save in cpuUsage_
 float Process::calculateCpuUsage() {
   map<string, float> val = LinuxParser::CpuUtilization(Pid());
+  long systemUptime = LinuxParser::UpTime();
   if (val.size() == 5)
-    return (val["utime"] + val["ktime"] + val["cutime"] + val["cstime"]) /
-           (uptime_ - val["stime"]);
+    return 100 * (val["utime"] + val["ktime"] + val["cutime"] + val["cstime"]) /
+           (systemUptime - val["stime"]);
   else
     return 0;
 }
